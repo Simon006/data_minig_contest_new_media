@@ -1,0 +1,2 @@
+# data_minig_contest_new_media
+新传媒比赛使用代码
