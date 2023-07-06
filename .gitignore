@@ -1,0 +1,6 @@
+data/events/*
+data/events_semantic/*
+shibing624/*
+*.bin
+*.xlsx
+test.ipynb
