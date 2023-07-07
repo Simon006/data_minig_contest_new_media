@@ -173,6 +173,37 @@ def test_multiple_model_training(x_train,y_train,x_valid,y_valid):
     print("R2_score:{} in XGBR".format(r2_score(y_valid, pred)))
 
 
+
+def xgb_pretrain(X_train,X_test,y_train,y_test,model_name=None):
+    xgb_train = xgb.DMatrix(X_train,label = y_train)
+    xgb_test = xgb.DMatrix(X_test,label = y_test)
+    # 若此处自定义目标函数，则objective 不需要指定
+    params ={
+        "objective":"count:poisson",
+        "booster":"gbtree",
+        "eta" : 0.1,
+        "max_depth": 5
+    }
+    num_round = 100
+    watch_list = [(xgb_train,"train"),(xgb_test,"test")]
+
+    model = xgb.train(params,xgb_train,num_round,watch_list)
+    if model_name==None:
+        model.save_model("./models/xgb_model.xgb")
+    else:
+        model.save_model(f"./models/{model_name}.xgb")    
+
+
+def loaded_model_predict(model_path,X_test,y_test):
+    xgb_test = xgb.DMatrix(X_test,label = y_test)
+    bst = xgb.Booster()
+    bst.load_model(model_path)
+    pred = bst.predict(xgb_test)
+    print("\npred:\n",pred)
+    print("\nytest:\n",y_test)
+    print("result:",[pred[i]-y_test[i] for i in range(len(pred))])
+    
+
 def XGBoost_fintune(X_train,X_test,Y_train,Y_test,mode,visualize=False):
     if mode == "coarse":
         print("\nstart coarse tuning:")
@@ -232,4 +263,15 @@ if __name__ == '__main__':
     X_train,X_test,y_train,y_test = load_data_from_xlrx()
     # test_DecisionTreeRegressor_depth(X_train,X_test,y_train,y_test,maxdepth=12,save_fig=True)
     # test_multiple_model_training(X_train,y_train,X_test,y_test)
-    XGBoost_fintune(X_train,X_test,y_train,y_test,mode="coarse",visualize=True)
+    # XGBoost_fintune(X_train,X_test,y_train,y_test,mode="coarse",visualize=True)
+
+
+    # xgb_pretrain(X_train,X_test,y_train,y_test)
+    
+
+    # model_path = "./models/xgb_model.xgb"
+    # loaded_model_predict(model_path=model_path,X_test=X_train,y_test=y_train)
+    print(type(X_train))
+    print(y_train.max())
+    print(len(X_train))
+    print(len(y_test))
