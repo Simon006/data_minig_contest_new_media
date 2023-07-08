@@ -31,13 +31,65 @@ def calcute_mean_max_var(df, column):
     return mean_value, max_value, var_value, sum_value
 
 # 将 点赞|转发|评论|粉丝数|关注数 这些标量值 的额外数值特征算出来
-def clacute_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
+def calculate_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
     re_arr = []
     for column in cal_type:
         mean_value, max_value, var_value,sum_value = calcute_mean_max_var(df, column)
         re_arr.extend([mean_value, max_value, var_value,sum_value])
     return re_arr
 
+
+# district_dict
+def district_dict():
+    from sklearn import preprocessing
+    le = preprocessing.LabelEncoder()
+    # 注意还有 海外地区
+    district_dict=le.fit([
+        "河北","山西",
+        "黑龙江","吉林",
+        "辽宁","江苏",
+        "浙江","安徽",
+        "福建","江西",
+        "山东","河南",
+        "湖北","湖南",
+        "广东","海南",
+        "四川","贵州",
+        "云南","陕西",
+        "甘肃","青海","台湾",
+        "内蒙古","广西","西藏","宁夏","新疆",
+        "北京","天津","上海","重庆",
+        "香港","澳门","海外","其他"
+    ])
+    print("district_dict classes:",district_dict.classes_)
+    
+    # district_dict demo
+    # print(district_dict.transform(["广东","四川"]))
+
+    return district_dict
+
+
+
+def calculate_int64_extra_district(dir_allData_path='./data/events'):
+    all_events_heat = read_events_heat()
+    district_dict=district_dict()
+    IDs = all_events_heat['序号'].values
+    # 保存的list
+    save_arr = []
+    name_list = []
+    for ID in IDs:
+        sample_event_path = os.path.join(dir_allData_path, str(ID)+'.xlsx')
+        try:
+            sample_event = pd.read_excel(sample_event_path)
+            # 数值标量统计信息
+            extra_arr = sample_event["地域"].value_counts()
+
+
+            save_arr.append([ID, *extra_arr])
+        except:
+            print(ID)
+            save_arr.append([ID])
+
+    return save_arr,name_list
 
 # 余弦相似度计算
 def cos_sim(a: Tensor, b: Tensor):

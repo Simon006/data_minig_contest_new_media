@@ -7,7 +7,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from untils import read_events_heat, read_sample_event, clacute_int64_extra
+from untils import read_events_heat, read_sample_event, calculate_int64_extra
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from sklearn.manifold import TSNE
@@ -66,7 +66,7 @@ def feature_int64_save(dir_allData_path='./data/events'):
         try:
             sample_event = pd.read_excel(sample_event_path)
             # 数值标量统计信息
-            extra_arr = clacute_int64_extra(sample_event)
+            extra_arr = calculate_int64_extra(sample_event)
             save_arr.append([ID, *extra_arr])
         except:
             print(ID)
@@ -79,6 +79,25 @@ def feature_int64_save(dir_allData_path='./data/events'):
                        '粉丝数-mean', '粉丝数-max', '粉丝数-var','粉丝数-sum',
                        '关注数-mean', '关注数-max', '关注数-var','关注数-sum']
     save_df.to_excel('./data/extra_3.xlsx', index=False)
+
+
+def feature_extract_v2(dir_allData_path='./data/events_semantic'):
+    all_events_heat = read_events_heat()
+    IDs = all_events_heat['序号'].values
+    # 保存的list
+    save_arr = []
+    for ID in IDs:
+        sample_event_path = os.path.join(dir_allData_path, str(ID)+'.xlsx')
+        # 数值标量统计信息
+        try:
+            sample_event = pd.read_excel(sample_event_path)
+            # 数值标量统计信息
+            extra_arr = calculate_int64_extra(sample_event)
+            save_arr.append([ID, *extra_arr,])
+        except:
+            print(ID)
+            save_arr.append([ID])
+
 
 
 # 对标量数据进行聚类         直接的数值型数据聚类，标签结果在 heat_events_Label_int64.xlsx
