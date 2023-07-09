@@ -92,6 +92,7 @@ def cal_semantic_similarity(contents, title):
     except:
         return [0] * len(contents)
 
+
 # 根据 'heat_events' 中 '标题/微博内容' 、 '全文内容' 和 '事件' 计算语义相似度\Tfidf
 def cal_semantic():
     if not os.path.exists('./data/events_semantic'):
