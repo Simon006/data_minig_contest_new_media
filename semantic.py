@@ -8,7 +8,7 @@ import torch
 
 from untils import read_events_heat, read_sample_event, cos_sim, semantic_search
 
-embedder = SentenceModel(r"D:\新传数据挖掘比赛\Code\ljh_demo\shibing624\text2vec-base-chinese-paraphrase")
+embedder = SentenceModel("shibing624/text2vec-base-chinese-paraphrase")
 
 
 # 测试API
@@ -58,7 +58,7 @@ def test():
 # 计算文本 内容集contents 与 标题title 的 Tfidf
 # return：list scores
 def cal_TfidfSimilarity(contents, title, if_corpus = False):
-    print('\nuse bm25 to calc each score:')
+    print('\nuse Tfidf to calc each score:')
     search_sim = TfidfSimilarity()
 
     if if_corpus:                                       # 是否根据整个语料库构建词频向量 / 单独两个句子的对应词频
@@ -81,7 +81,7 @@ def cal_TfidfSimilarity(contents, title, if_corpus = False):
 # return: hits    hit['corpus_id'] 对应内容文本的下标，可以直接 contents[hit['corpus_id']] 取得内容文本
 #                 hit['score'] 计算得到的对应的语义相似度
 def cal_semantic_similarity(contents, title):
-    print('\nuse semantic_search to perform cosine similarty + topk:')
+    print('\nuse semantic_search to perform cosine similarity')
     try:
         contents_embeddings = embedder.encode(contents)
         test_title_embedding = embedder.encode(title)

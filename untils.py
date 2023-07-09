@@ -34,8 +34,8 @@ def calcute_mean_max_var(df, column):
 def clacute_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
     re_arr = []
     for column in cal_type:
-        mean_value, max_value, var_value,sum_value = calcute_mean_max_var(df, column)
-        re_arr.extend([mean_value, max_value, var_value,sum_value])
+        mean_value, max_value, var_value, sum_value = calcute_mean_max_var(df, column)
+        re_arr.extend([mean_value, max_value, var_value, sum_value])
     return re_arr
 
 
