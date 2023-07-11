@@ -34,13 +34,16 @@ def calcute_mean_max_var(df, column):
 def calculate_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
     re_arr = []
     for column in cal_type:
-        mean_value, max_value, var_value, sum_value = calcute_mean_max_var(df, column)
-        re_arr.extend([mean_value, max_value, var_value, sum_value])
+        mean_value, max_value, var_value,sum_value = calcute_mean_max_var(df, column)
+        re_arr.extend([mean_value, max_value, var_value,sum_value])
     return re_arr
 
 
+
+
+
 # district_dict
-def district_dict():
+def make_district_dict():
     from sklearn import preprocessing
     le = preprocessing.LabelEncoder()
     # 注意还有 海外地区
@@ -68,28 +71,36 @@ def district_dict():
     return district_dict
 
 
-
+# 136 297 490 496 639 914 996 1375 1502 1732 1757 1864 2795 2906 3451 3732 3989
 def calculate_int64_extra_district(dir_allData_path='./data/events'):
     all_events_heat = read_events_heat()
-    district_dict = district_dict()
+    district_dict = make_district_dict()
     IDs = all_events_heat['序号'].values
     # 保存的list
     save_arr = []
-    name_list = []
+    
     for ID in IDs:
         sample_event_path = os.path.join(dir_allData_path, str(ID)+'.xlsx')
         try:
             sample_event = pd.read_excel(sample_event_path)
             # 数值标量统计信息
             extra_arr = sample_event["地域"].value_counts()
-
-
-            save_arr.append([ID, *extra_arr])
+            types_num = extra_arr.values.shape[0]
+            index_list = district_dict.classes_
+            templete_arr = []
+            for district in index_list:
+                if district in extra_arr.index.values:
+                    templete_arr.append(extra_arr[district])
+                else:
+                    templete_arr.append(0)
+            save_arr.append([ID, *templete_arr])
         except:
             print(ID)
             save_arr.append([ID])
-
-    return save_arr,name_list
+    # 转excel数据
+    excel_data_district= pd.DataFrame(save_arr,columns=[ID,*index_list])        
+    excel_data_district.to_excel(f"./data/{time.time()}_district_feature_data.xlsx")
+    return save_arr,index_list
 
 # 余弦相似度计算
 def cos_sim(a: Tensor, b: Tensor):
@@ -186,13 +197,16 @@ def semantic_search(query_embeddings: Tensor,
 
 
 
-def calculate_days_diff():
+def calculate_days_diff(save_status=False,save_path="./data"):
     nowadays = "2023-06-25 00:00:00"
     # timeArray = time.strptime(nowadays, "%Y-%m-%d %H:%M:%S")
     datetimeArray=datetime.datetime.strptime(nowadays, "%Y-%m-%d %H:%M:%S")
     all_events_heat = read_events_heat()
     all_events_heat["时间衰减系数"] = (datetimeArray-all_events_heat["起始时间"]).apply(lambda x: x.days/365)
-
+    if save_status == True:
+        filename = "extra_4.xlsx"
+        all_events_heat.to_excel(save_path+"/"+filename, index=False)
+        
     return all_events_heat
 
 

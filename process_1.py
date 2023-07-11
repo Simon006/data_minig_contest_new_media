@@ -15,7 +15,7 @@ from IPython.display import Image
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import Ridge,LinearRegression
-from untils import read_events_heat, read_sample_event, clacute_int64_extra
+from untils import read_events_heat, read_sample_event, calculate_int64_extra
 import xgboost as xgb
 from sklearn.metrics import r2_score#R square
 from sklearn.model_selection import cross_val_score
@@ -179,15 +179,17 @@ def xgb_pretrain(X_train,X_test,y_train,y_test,model_name=None):
     xgb_test = xgb.DMatrix(X_test,label = y_test)
     # 若此处自定义目标函数，则objective 不需要指定
     params ={
-        "objective":"count:poisson",
+        # "objective":"count:poisson",
+        "objectiive":"reg:gamma",
         "booster":"gbtree",
-        "eta" : 0.1,
-        "max_depth": 5
+        "eta" : 0.01,
+        "max_depth": 7
     }
-    num_round = 100
+    num_round = 400
     watch_list = [(xgb_train,"train"),(xgb_test,"test")]
 
     model = xgb.train(params,xgb_train,num_round,watch_list)
+    
     if model_name==None:
         model.save_model("./models/xgb_model.xgb")
     else:
@@ -238,7 +240,7 @@ def XGBoost_fintune(X_train,X_test,Y_train,Y_test,mode,visualize=False):
         for booster in ["gbtree","gblinear","dart"]:
             reg = xgb.XGBRegressor(
                 n_estimators = 180,
-                learning_rate = 0.1,
+                learning_rate = 0.01,
                 random_state = 420,
                 booster = booster,
                 verbosity= 2
@@ -247,16 +249,33 @@ def XGBoost_fintune(X_train,X_test,Y_train,Y_test,mode,visualize=False):
             print(booster,":",reg.score(X_test,Y_test))
         return reg 
     
+        
+
 
     else:
         print("false mode")
         return
     return 
 
+    
+def xgb_predict(model_path,X_test):
+    dtest = xgb.DMatrix(X_test)
+    clf = xgb.XGBClassifier()
+    booster = xgb.Booster()
+    booster.load_model(model_path)
+    clf._Booster = booster
+
+    clf.predict(...)
+    ans = clf.predict(dtest)
+    return ans
+
+    
+
 
 
 
 if __name__ == '__main__':
+    from xgboost import plot_importance
     # look_all_data()
     # CART_fit()
     
@@ -275,3 +294,35 @@ if __name__ == '__main__':
     print(y_train.max())
     print(len(X_train))
     print(len(y_test))
+
+    # cols_to_cluster = ["上海","云南","其他","内蒙古","北京", "台湾","吉林","四川","天津","宁夏","安徽",	"山东","山西",
+    #                    "广东","广西","新疆","江苏","江西","河北","河南","浙江","海南","海外","湖北","湖南","澳门","甘肃","福建","西藏","贵州",
+    #                    "辽宁","重庆","陕西","青海","香港","黑龙江","点赞-mean","点赞-max","点赞-var","点赞-sum","转发-mean","转发-max","转发-var",
+    #                    "转发-sum","评论-mean","评论-max","评论-var","评论-sum","粉丝数-mean","粉丝数-max","粉丝数-var","粉丝数-sum","关注数-mean",
+    #                    "关注数-max","关注数-var","关注数-sum","时间衰减系数"]
+    cols_to_cluster = ["上海","云南","其他","内蒙古","北京", "台湾","吉林","四川","天津","宁夏","安徽",	"山东","山西",
+                       "广东","广西","新疆","江苏","江西","河北","河南","浙江","海南","海外","湖北","湖南","澳门","甘肃","福建","西藏","贵州",
+                       "辽宁","重庆","陕西","青海","香港","黑龙江","粉丝数-mean","粉丝数-max","粉丝数-sum","关注数-mean",
+                       "关注数-max","关注数-sum","时间衰减系数"]
+
+
+
+    filename = "meta_data_v1.xlsx"
+    X_train, X_test, y_train, y_test = load_data_from_xlrx(filename=filename,cols_to_cluster=cols_to_cluster)
+    # test_multiple_model_training(X_train,y_train,X_test,y_test)
+    '''
+    MSE:5.039337740351233 in Ridge
+    R2_score:0.07426382908317941 in Ridge
+    MSE:6.076554846938776 in DTR
+    R2_score:-0.11627497623905558 in DTR
+    MSE:4.259266925592403 in XGBR
+    R2_score:0.21756435909458371 in XGBR
+    '''
+
+    # xgb_pretrain(X_train,X_test,y_train,y_test)
+
+    # reg =  XGBoost_fintune(X_train,X_test,y_train,y_test,"booster",visualize=True)
+    # print(type(reg))
+    # print(reg)
+    
+    xgb_pretrain(X_train,X_test,y_train,y_test,model_name="7_11_v2_colv2_xgb")
