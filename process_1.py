@@ -15,7 +15,7 @@ from IPython.display import Image
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import Ridge,LinearRegression
-from untils import read_events_heat, read_sample_event, clacute_int64_extra
+from untils import read_events_heat, read_sample_event, calculate_int64_extra
 import xgboost as xgb
 from sklearn.metrics import r2_score#R square
 from sklearn.model_selection import cross_val_score

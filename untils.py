@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 import os
 import time
 import datetime
@@ -9,6 +10,24 @@ from torch import Tensor
 
 from text2vec.utils.rank_bm25 import BM25Okapi
 from text2vec.utils.tokenizer import JiebaTokenizer
+
+# 将 './data/events' 下所有数据的 某一列-'全文内容' 合并为一个语料库
+def combine_content(file_path = './data/events/*.xlsx', column_name = '全文内容', save_path = './data/word2vec/contents_corpus.csv'):
+    # 获取所有符合条件的文件路径
+    files = glob.glob(file_path)
+    # 读取每个文件中指定列的数据，并将数据合并为一个 DataFrame
+    dataframes = []
+    for file in files:
+        try:
+            df = pd.read_excel(file, usecols=[column_name])
+            dataframes.append(df)
+        except:
+            continue
+    merged_df = pd.concat(dataframes, ignore_index=True)
+    # 将 DataFrame 中的数据转换为一个列表
+    print('语料库长度：', len(merged_df))
+    merged_df.to_csv(save_path, header=True)
+
 
 # 读取总文件
 def read_events_heat(dir_path='./data', filename="heat_events.xlsx"):
@@ -31,7 +50,9 @@ def calcute_mean_max_var(df, column):
     return mean_value, max_value, var_value, sum_value
 
 # 将 点赞|转发|评论|粉丝数|关注数 这些标量值 的额外数值特征算出来
-def calculate_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
+def calculate_int64_extra(df, cal_type=None):
+    if cal_type is None:
+        cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']
     re_arr = []
     for column in cal_type:
         mean_value, max_value, var_value, sum_value = calcute_mean_max_var(df, column)
