@@ -1,12 +1,13 @@
 import sys
 import os
+import pandas as pd
 
 import numpy
 from text2vec import SentenceModel
 from similarities.literalsim import TfidfSimilarity, BM25Similarity
 import torch
 
-from untils import read_events_heat, read_sample_event, cos_sim, semantic_search
+from untils import read_events_heat, read_sample_event, cos_sim, semantic_search, new_file_ID
 
 embedder = SentenceModel("shibing624/text2vec-base-chinese-paraphrase")
 
@@ -107,11 +108,22 @@ def cal_semantic():
         ID = IDs[i]
         title = titles[i]
 
+        # 如果已经计算过，则跳过
+        if os.path.exists('./data/events_semantic/' + str(ID) + '.xlsx'):
+            continue
+
         # 某些文件读取失败
         try:
-            sample = read_sample_event(ID)
+            # 更改后的events数据文件，可以读取
+            if ID in new_file_ID:
+                new_current_sample_path = os.path.join('./data/events_new', 'new' + str(ID) + '.xlsx')
+                sample = pd.read_excel(new_current_sample_path)
+            else:
+                sample = read_sample_event(ID)
         except:
             continue
+
+        print('当前计算事件ID: ', ID)
 
         contents = list(sample['全文内容'].values)
         contents_short = list(sample['标题/微博内容'].values)

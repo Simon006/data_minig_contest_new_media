@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 import os
 import time
 import datetime
@@ -9,6 +10,59 @@ from torch import Tensor
 
 from text2vec.utils.rank_bm25 import BM25Okapi
 from text2vec.utils.tokenizer import JiebaTokenizer
+
+new_file_ID = [104, 136, 297, 490, 639, 914, 1375,
+               1502, 1732, 1757, 1864, 2795, 2906,
+               3732, 3989]
+
+# 所有数据列
+all_columns = ['时间衰减系数', '点赞-mean', '点赞-max', '点赞-var', '点赞-sum',
+                '转发-mean', '转发-max', '转发-var', '转发-sum',
+                '评论-mean', '评论-max', '评论-var', '评论-sum',
+                '粉丝数-mean', '粉丝数-max', '粉丝数-var', '粉丝数-sum',
+                '关注数-mean', '关注数-max', '关注数-var', '关注数-sum',
+                '全文内容-词频相似性-mean', '全文内容-词频相似性-max', '全文内容-词频相似性-var', '全文内容-词频相似性-sum',
+                '标题/微博内容-词频相似性-mean', '标题/微博内容-词频相似性-max', '标题/微博内容-词频相似性-var', '标题/微博内容-词频相似性-sum',
+                '全文内容-语义相似性-mean', '全文内容-语义相似性-max', '全文内容-语义相似性-var', '全文内容-语义相似性-sum',
+                '标题/微博内容-语义相似性-mean', '标题/微博内容-语义相似性-max', '标题/微博内容-语义相似性-var', '标题/微博内容-语义相似性-sum',
+                '全文内容-情感极性值-mean', '全文内容-情感极性值-max', '全文内容-情感极性值-var', '全文内容-情感极性值-sum',
+                '标题/微博内容-情感极性值-mean', '标题/微博内容-情感极性值-max', '标题/微博内容-情感极性值-var', '标题/微博内容-情感极性值-sum']
+
+# 标量型数据列
+int64_columns = ['点赞-mean', '点赞-max', '点赞-var', '点赞-sum',
+                '转发-mean', '转发-max', '转发-var', '转发-sum',
+                '评论-mean', '评论-max', '评论-var', '评论-sum',
+                '粉丝数-mean', '粉丝数-max', '粉丝数-var', '粉丝数-sum',
+                '关注数-mean', '关注数-max', '关注数-var', '关注数-sum']
+
+# 词频（词面量）相似性、语义相似性 数据列
+semantic_columns = ['全文内容-词频相似性-mean', '全文内容-词频相似性-max', '全文内容-词频相似性-var', '全文内容-词频相似性-sum',
+                    '标题/微博内容-词频相似性-mean', '标题/微博内容-词频相似性-max', '标题/微博内容-词频相似性-var', '标题/微博内容-词频相似性-sum',
+                    '全文内容-语义相似性-mean', '全文内容-语义相似性-max', '全文内容-语义相似性-var', '全文内容-语义相似性-sum',
+                    '标题/微博内容-语义相似性-mean', '标题/微博内容-语义相似性-max', '标题/微博内容-语义相似性-var', '标题/微博内容-语义相似性-sum']
+
+# 情感数据列
+emotion_columns = ['全文内容-情感极性值-mean', '全文内容-情感极性值-max', '全文内容-情感极性值-var', '全文内容-情感极性值-sum',
+                    '标题/微博内容-情感极性值-mean', '标题/微博内容-情感极性值-max', '标题/微博内容-情感极性值-var', '标题/微博内容-情感极性值-sum']
+
+
+# 将 './data/events' 下所有数据的 某一列-'全文内容' 合并为一个语料库
+def combine_content(file_path = './data/events/*.xlsx', column_name = '全文内容', save_path = './data/word2vec/contents_corpus.csv'):
+    # 获取所有符合条件的文件路径
+    files = glob.glob(file_path)
+    # 读取每个文件中指定列的数据，并将数据合并为一个 DataFrame
+    dataframes = []
+    for file in files:
+        try:
+            df = pd.read_excel(file, usecols=[column_name])
+            dataframes.append(df)
+        except:
+            continue
+    merged_df = pd.concat(dataframes, ignore_index=True)
+    # 将 DataFrame 中的数据转换为一个列表
+    print('语料库长度：', len(merged_df))
+    merged_df.to_csv(save_path, header=True)
+
 
 # 读取总文件
 def read_events_heat(dir_path='./data', filename="heat_events.xlsx"):
@@ -31,7 +85,9 @@ def calcute_mean_max_var(df, column):
     return mean_value, max_value, var_value, sum_value
 
 # 将 点赞|转发|评论|粉丝数|关注数 这些标量值 的额外数值特征算出来
-def calculate_int64_extra(df, cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']):
+def calculate_int64_extra(df, cal_type=None):
+    if cal_type is None:
+        cal_type = ['点赞', '转发', '评论', '粉丝数', '关注数']
     re_arr = []
     for column in cal_type:
         mean_value, max_value, var_value,sum_value = calcute_mean_max_var(df, column)
