@@ -12,7 +12,7 @@ import multiprocessing
 from gensim.models import Word2Vec
 import pandas as pd
 
-from untils import read_events_heat, read_sample_event, combine_content
+from untils import read_events_heat, read_sample_event, combine_content, new_file_ID
 from word2vec_torch import Word2VecDataset, Word2Vec_torch, train_word2vec, test_word2vec
 
 
@@ -166,9 +166,16 @@ def emotion(sentiment_dict_path):
 
         # 某些文件读取失败
         try:
-            sample = read_sample_event(ID)
+            # 更改后的events数据文件，可以读取
+            if ID in new_file_ID:
+                new_current_sample_path = os.path.join('./data/events_new', 'new' + str(ID) + '.xlsx')
+                sample = pd.read_excel(new_current_sample_path)
+            else:
+                sample = read_sample_event(ID)
         except:
             continue
+
+        print('当前计算事件ID: ', ID)
 
         contents = list(sample['全文内容'].values)
         contents_short = list(sample['标题/微博内容'].values)
@@ -354,8 +361,8 @@ if __name__ == '__main__':
     # test_add_words('./data/test_new_dict.txt')
 
     # 新闻文本情感词典地址
-    # sentiment_dict_path = './data/word2vec/wordset1_dictionary.txt'
-    # emotion(sentiment_dict_path)
+    sentiment_dict_path = './data/word2vec/wordset1_dictionary.txt'
+    emotion(sentiment_dict_path)
 
     # 合并全文内容作为语料库 (没有分词)，分词在 split_train_list()中实现
     # combine_content(file_path='./data/events/*.xlsx', column_name='全文内容', save_path='./data/word2vec/contents_corpus.csv')
@@ -364,7 +371,7 @@ if __name__ == '__main__':
     # get_wordset1_value()
 
     # 训练 torch GPU Word2Vec 模型并保存
-    train_w2v_torch_gpu()
+    # train_w2v_torch_gpu()
     # 训练 Word2Vec 模型并保存
     # train_w2v()
 
