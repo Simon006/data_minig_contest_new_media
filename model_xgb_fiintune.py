@@ -28,4 +28,17 @@ print('最佳模型得分:{0}'.format(optimized_GBM.best_score_))
 
 
 
+# 参数的最佳取值：{'learning_rate': 0.0001, 'n_estimators': 800, 'reg_alpha': 0}
+# 最佳模型得分:0.026395031769172638
 
+
+
+# to do 
+# 模型更多参数探索
+# 模型表现提升 
+# 特征重要度
+# 观察不同数据列下的模型表现
+# nn模型表现
+
+
+# 词典 
