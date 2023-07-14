@@ -1,3 +1,4 @@
+import torch
 import pandas as pd
 import glob
 import os
@@ -5,7 +6,7 @@ import time
 import datetime
 from typing import List, Union, Tuple, Optional
 import numpy as np
-import torch
+
 from torch import Tensor
 
 from text2vec.utils.rank_bm25 import BM25Okapi
