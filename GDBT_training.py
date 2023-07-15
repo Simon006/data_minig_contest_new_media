@@ -11,6 +11,25 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
+def remove_invalid_rows(x_data):
+    # 复制输入数据以保留原始数据不变
+    x_data_process = x_data.copy()
+    
+    # 找到连续为空值或NAN的行
+    is_invalid_row = x_data_process.isnull().any(axis=1)
+    is_invalid_row |= x_data_process.isna().any(axis=1)
+    # print("空无效值值列：",np.where(is_invalid_row[0]))
+    # 找到连续13列值为0的行   注意：存在转发点赞评论为零的经过实验发现是12列最多，最后得到结果与人眼观测结果一致，得到所有去除后的数据  
+    is_invalid_row |= (x_data_process == 0).astype(int).rolling(13, axis=1).sum().eq(13).any(axis=1)
+    # 获取需要删除的行的索引
+    invalid_row_indices = np.where(is_invalid_row)[0]
+    
+    # 删除无效行
+    x_data_process.drop(x_data_process.index[invalid_row_indices], inplace=True)
+    
+    # 返回处理后的数据和删除的行索引
+    return x_data_process, invalid_row_indices
+
 
 
 def  GDBT_training(X_train, X_test, y_train, y_test,model_save_path=None):
