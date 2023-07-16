@@ -9,3 +9,5 @@ test.ipynb
 *.html
 *.pkl
 *.pyc
+
+*.pth

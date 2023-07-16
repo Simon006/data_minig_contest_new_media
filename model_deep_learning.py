@@ -196,6 +196,9 @@ def train():
 
 # 查看特征和最终热度的相关系数
 def corr():
+    # 中文显示
+    plt.rcParams['font.family'] = ['sans-serif']
+    plt.rcParams['font.sans-serif'] = ['SimHei']
     # 读取数据
     all_events_heat = read_events_heat(filename="heat_events.xlsx")
     event_heat = all_events_heat['热度']
@@ -223,5 +226,5 @@ def corr():
 
 
 if __name__ == '__main__':
-    # train()
-    corr()
+    train()
+    # corr()
